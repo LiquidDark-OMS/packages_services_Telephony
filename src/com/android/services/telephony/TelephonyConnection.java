@@ -388,6 +388,11 @@ abstract class TelephonyConnection extends Connection {
     private boolean mIsConferenceSupported;
 
     /**
+     * Indicates whether this connection supports showing preciese call failed cause.
+     */
+    private boolean mIsPreciseFailedCauseSupported;
+
+    /**
      * Listeners to our TelephonyConnection specific callbacks
      */
     private final Set<TelephonyConnectionListener> mTelephonyListeners = Collections.newSetFromMap(
@@ -1010,8 +1015,13 @@ abstract class TelephonyConnection extends Connection {
                     setRinging();
                     break;
                 case DISCONNECTED:
+                    int preciseDisconnectCause = -1;
+                    if (mIsPreciseFailedCauseSupported) {
+                        preciseDisconnectCause = mOriginalConnection.getPreciseDisconnectCause();
+                    }
                     setDisconnected(DisconnectCauseUtil.toTelecomDisconnectCause(
                             mOriginalConnection.getDisconnectCause(),
+                            preciseDisconnectCause,
                             mOriginalConnection.getVendorDisconnectCause()));
                     close();
                     break;
@@ -1277,6 +1287,15 @@ abstract class TelephonyConnection extends Connection {
      */
     public boolean isConferenceSupported() {
         return mIsConferenceSupported;
+    }
+
+    /**
+     * Sets whether this connection supports showing precise call disconnect cause.
+     * @param isShowPreciseFailedCauseSupported  {@code true} if showing precise call
+     * disconnect cause is supported by this connection, {@code false} otherwise.
+     */
+    public void setPreciseFailedCauseSupported(boolean isPreciseFailedCauseSupported) {
+        mIsPreciseFailedCauseSupported = isPreciseFailedCauseSupported;
     }
 
     /**
